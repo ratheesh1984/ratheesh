@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: tomcat-service
+  namespace: tomcat-app
+  labels:
+    app: tomcat
+spec:
+  # ClusterIP: internal-only. External traffic comes in through the
+  # NGINX ingress controller, which proxies to this service.
+  type: ClusterIP
+  selector:
+    app: tomcat
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+      protocol: TCP
