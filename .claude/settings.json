@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ssh -i d:/Learning/kubernetes-selfmanaged/terraform/k8s_id_rsa azureuser@20.55.246.243 \"ip route | grep 192.168 && echo '---' && curl -s -m 3 http://192.168.254.132:8080/ -o /dev/null -w 'tomcat-pod HTTP %{http_code}' 2>&1\")",
+      "Bash(ssh -i d:/Learning/kubernetes-selfmanaged/terraform/k8s_id_rsa azureuser@20.55.246.243 \"kubectl get ippool default-ipv4-ippool -o yaml 2>&1 | grep -E 'ipipMode|vxlanMode|cidr'\")",
+      "Bash(ssh -i d:/Learning/kubernetes-selfmanaged/terraform/k8s_id_rsa azureuser@20.55.246.243 \"kubectl patch ippool default-ipv4-ippool --type=merge -p '{\\\\\"spec\\\\\":{\\\\\"ipipMode\\\\\":\\\\\"Never\\\\\",\\\\\"vxlanMode\\\\\":\\\\\"Always\\\\\"}}' 2>&1\")",
+      "Bash(ssh -i d:/Learning/kubernetes-selfmanaged/terraform/k8s_id_rsa azureuser@20.55.246.243 \"kubectl -n kube-system rollout restart daemonset/calico-node && kubectl -n kube-system rollout status daemonset/calico-node --timeout=120s 2>&1\")",
+      "Bash(ssh -i d:/Learning/kubernetes-selfmanaged/terraform/k8s_id_rsa azureuser@20.55.246.243 \"curl -s -m 5 http://192.168.254.132:8080/ -o /dev/null -w 'tomcat-pod HTTP %{http_code}' && echo '' && curl -s -m 5 http://10.10.1.5:30080/ -o /dev/null -w 'NodePort HTTP %{http_code}' 2>&1\")",
+      "Bash(terraform apply *)",
+      "Bash(terraform import *)",
+      "Bash(scp -i d:/Learning/kubernetes-selfmanaged/terraform/k8s_id_rsa d:/Learning/kubernetes-selfmanaged/scripts/01-init-master.sh azureuser@20.127.130.235:~)",
+      "Bash(ssh -i d:/Learning/kubernetes-selfmanaged/terraform/k8s_id_rsa azureuser@20.127.130.235 \"chmod +x ~/01-init-master.sh && ~/01-init-master.sh 10.10.1.4 2>&1\")",
+      "Bash(scp -o StrictHostKeyChecking=no -i d:/Learning/kubernetes-selfmanaged/terraform/k8s_id_rsa d:/Learning/kubernetes-selfmanaged/scripts/01-init-master.sh azureuser@20.127.130.235:~)",
+      "Bash(ssh -o StrictHostKeyChecking=no -i d:/Learning/kubernetes-selfmanaged/terraform/k8s_id_rsa azureuser@20.127.130.235 \"chmod +x ~/01-init-master.sh && ~/01-init-master.sh 10.10.1.4 2>&1\")",
+      "Bash(scp -o StrictHostKeyChecking=no -i d:/Learning/kubernetes-selfmanaged/terraform/k8s_id_rsa d:/Learning/kubernetes-selfmanaged/terraform/k8s_id_rsa azureuser@20.127.130.235:~/.ssh/worker_key)",
+      "Bash(ssh -o StrictHostKeyChecking=no -i d:/Learning/kubernetes-selfmanaged/terraform/k8s_id_rsa azureuser@20.127.130.235 \"chmod 600 ~/.ssh/worker_key && ssh -i ~/.ssh/worker_key -o StrictHostKeyChecking=no azureuser@10.10.1.5 'sudo kubeadm join 10.10.1.4:6443 --token c1p6wb.xw40yscjpkp0olnk --discovery-token-ca-cert-hash sha256:8479552ac227a72a925c066cef4eb60478bbf41a8e7097edf1854c75d747c0a8 2>&1'\")",
+      "Bash(ssh -o StrictHostKeyChecking=no -i d:/Learning/kubernetes-selfmanaged/terraform/k8s_id_rsa azureuser@20.127.130.235 \"kubectl get nodes\")",
+      "Bash(ssh -o StrictHostKeyChecking=no -i d:/Learning/kubernetes-selfmanaged/terraform/k8s_id_rsa azureuser@20.127.130.235 \"kubectl wait --for=condition=Ready node/k8s-worker --timeout=120s && kubectl get nodes\")",
+      "Bash(scp -o StrictHostKeyChecking=no -i d:/Learning/kubernetes-selfmanaged/terraform/k8s_id_rsa -r d:/Learning/kubernetes-selfmanaged/kubernetes d:/Learning/kubernetes-selfmanaged/scripts/03-deploy-app.sh azureuser@20.127.130.235:~)",
+      "Bash(ssh -o StrictHostKeyChecking=no -i d:/Learning/kubernetes-selfmanaged/terraform/k8s_id_rsa azureuser@20.127.130.235 \"kubectl patch ippool default-ipv4-ippool --type=merge -p '{\\\\\"spec\\\\\":{\\\\\"ipipMode\\\\\":\\\\\"Never\\\\\",\\\\\"vxlanMode\\\\\":\\\\\"Always\\\\\"}}' && kubectl -n kube-system rollout restart daemonset/calico-node && kubectl -n kube-system rollout status daemonset/calico-node --timeout=120s 2>&1\")",
+      "Bash(ssh -o StrictHostKeyChecking=no -i d:/Learning/kubernetes-selfmanaged/terraform/k8s_id_rsa azureuser@20.127.130.235 \"chmod +x ~/03-deploy-app.sh && ~/03-deploy-app.sh 2>&1\")",
+      "Bash(ssh -o StrictHostKeyChecking=no -i d:/Learning/kubernetes-selfmanaged/terraform/k8s_id_rsa azureuser@20.127.130.235 \"mkdir -p ~/scripts && mv ~/03-deploy-app.sh ~/scripts/ && chmod +x ~/scripts/03-deploy-app.sh && ~/scripts/03-deploy-app.sh 2>&1\")",
+      "Bash(ssh -o StrictHostKeyChecking=no -i d:/Learning/kubernetes-selfmanaged/terraform/k8s_id_rsa azureuser@20.127.130.235 \"kubectl delete validatingwebhookconfiguration ingress-nginx-admission 2>/dev/null || true && kubectl -n ingress-nginx patch deployment ingress-nginx-controller --patch '{\\\\\"spec\\\\\":{\\\\\"template\\\\\":{\\\\\"spec\\\\\":{\\\\\"tolerations\\\\\":[{\\\\\"key\\\\\":\\\\\"node-role.kubernetes.io/control-plane\\\\\",\\\\\"operator\\\\\":\\\\\"Exists\\\\\",\\\\\"effect\\\\\":\\\\\"NoSchedule\\\\\"}],\\\\\"nodeSelector\\\\\":{\\\\\"kubernetes.io/hostname\\\\\":\\\\\"k8s-master\\\\\"}}}}}' && kubectl -n ingress-nginx rollout status deployment/ingress-nginx-controller --timeout=120s 2>&1\")",
+      "Bash(ssh -o StrictHostKeyChecking=no -i d:/Learning/kubernetes-selfmanaged/terraform/k8s_id_rsa azureuser@20.127.130.235 \"curl -s -m 5 -o /dev/null -w 'HTTP %{http_code}' http://20.127.130.235:30080/ 2>&1\")",
+      "Bash(ssh -i \"d:\\\\Learning\\\\kubernetes-selfmanaged\\\\terraform\\\\k8s_id_rsa\" -o StrictHostKeyChecking=no azureuser@20.127.130.235 \"kubectl get nodes -o wide && echo '---' && kubectl get all --all-namespaces\")",
+      "Bash(ssh -i \"d:\\\\Learning\\\\kubernetes-selfmanaged\\\\terraform\\\\k8s_id_rsa\" -o StrictHostKeyChecking=no azureuser@20.127.130.235 \"kubectl get nodes -o wide && echo '---PODS---' && kubectl get all --all-namespaces\")"
+    ]
+  }
+}
