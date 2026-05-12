@@ -1,21 +1,20 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: nginx-ingress
-  namespace: default
+  name: tomcat-ingress
+  namespace: tomcat-app
   annotations:
-    kubernetes.io/ingress.class: "nginx"
     nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
 spec:
   ingressClassName: nginx
   rules:
-    - host: 9-169-76-123.sslip.io       # replace with your FQDN or remove for IP-based
-      http:
+    - http:
         paths:
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: nginx-service   # must match ClusterIP service name
+                name: tomcat-service
                 port:
                   number: 80
