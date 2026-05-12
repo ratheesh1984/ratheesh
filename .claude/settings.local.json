@@ -1,0 +1,41 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(scp -i d:/Learning/kubernetes-selfmanaged/terraform/k8s_id_rsa d:/Learning/kubernetes-selfmanaged/scripts/01-init-master.sh azureuser@20.55.246.243:~)",
+      "Bash(ssh -i d:/Learning/kubernetes-selfmanaged/terraform/k8s_id_rsa azureuser@20.55.246.243 \"chmod +x ~/01-init-master.sh\")",
+      "Bash(ssh -i d:/Learning/kubernetes-selfmanaged/terraform/k8s_id_rsa azureuser@20.55.246.243 \"~/01-init-master.sh 10.10.1.5 2>&1\")",
+      "Bash(ssh -i d:/Learning/kubernetes-selfmanaged/terraform/k8s_id_rsa -J azureuser@20.55.246.243 azureuser@10.10.1.4 \"sudo kubeadm join 10.10.1.5:6443 --token o46kva.6poqbku9mjrus24z --discovery-token-ca-cert-hash sha256:9181b60c6fe19f7f50cbfb335855be58e33e24fd0a157ae2f45f64f708006b49 2>&1\")",
+      "Bash(scp -i d:/Learning/kubernetes-selfmanaged/terraform/k8s_id_rsa d:/Learning/kubernetes-selfmanaged/terraform/k8s_id_rsa azureuser@20.55.246.243:~/.ssh/worker_key)",
+      "Bash(ssh -i d:/Learning/kubernetes-selfmanaged/terraform/k8s_id_rsa azureuser@20.55.246.243 \"chmod 600 ~/.ssh/worker_key && ssh -i ~/.ssh/worker_key -o StrictHostKeyChecking=no azureuser@10.10.1.4 'sudo kubeadm join 10.10.1.5:6443 --token o46kva.6poqbku9mjrus24z --discovery-token-ca-cert-hash sha256:9181b60c6fe19f7f50cbfb335855be58e33e24fd0a157ae2f45f64f708006b49 2>&1'\")",
+      "Bash(ssh -i d:/Learning/kubernetes-selfmanaged/terraform/k8s_id_rsa azureuser@20.55.246.243 \"kubectl get nodes\")",
+      "Bash(scp -i d:/Learning/kubernetes-selfmanaged/terraform/k8s_id_rsa -r d:/Learning/kubernetes-selfmanaged/scripts d:/Learning/kubernetes-selfmanaged/kubernetes azureuser@20.55.246.243:~)",
+      "Bash(ssh -i d:/Learning/kubernetes-selfmanaged/terraform/k8s_id_rsa azureuser@20.55.246.243 \"chmod +x ~/scripts/03-deploy-app.sh && ~/scripts/03-deploy-app.sh 2>&1\")",
+      "Bash(ssh -i d:/Learning/kubernetes-selfmanaged/terraform/k8s_id_rsa azureuser@20.55.246.243 \"kubectl -n ingress-nginx wait --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=120s 2>&1 && kubectl apply -f ~/kubernetes/05-ingress.yaml 2>&1\")",
+      "Bash(ssh -i d:/Learning/kubernetes-selfmanaged/terraform/k8s_id_rsa azureuser@20.55.246.243 \"kubectl delete validatingwebhookconfiguration ingress-nginx-admission 2>&1 && kubectl apply -f ~/kubernetes/05-ingress.yaml 2>&1\")",
+      "Bash(ssh -i d:/Learning/kubernetes-selfmanaged/terraform/k8s_id_rsa azureuser@20.55.246.243 \"kubectl -n tomcat-app rollout status deployment/tomcat-deployment --timeout=300s 2>&1 && kubectl -n tomcat-app get all,ingress 2>&1\")",
+      "Bash(ssh -i d:/Learning/kubernetes-selfmanaged/terraform/k8s_id_rsa azureuser@20.55.246.243 \"kubectl -n ingress-nginx get svc ingress-nginx-controller && echo '---' && kubectl -n ingress-nginx get pods && echo '---' && kubectl -n tomcat-app get ingress -o wide 2>&1\")",
+      "Bash(ssh -i d:/Learning/kubernetes-selfmanaged/terraform/k8s_id_rsa azureuser@20.55.246.243 \"curl -s -o /dev/null -w '%{http_code}' http://localhost:30080/ && echo '' && ss -tlnp | grep 30080 2>&1\")",
+      "Bash(ssh -i d:/Learning/kubernetes-selfmanaged/terraform/k8s_id_rsa azureuser@20.55.246.243 \"curl -v http://localhost:30080/ 2>&1 | head -30\")",
+      "Bash(ssh -i d:/Learning/kubernetes-selfmanaged/terraform/k8s_id_rsa azureuser@20.55.246.243 \"kubectl -n ingress-nginx get svc ingress-nginx-controller -o jsonpath='{.spec.ports}' 2>&1\")",
+      "Bash(ssh -i d:/Learning/kubernetes-selfmanaged/terraform/k8s_id_rsa azureuser@20.55.246.243 \"kubectl -n ingress-nginx get pod -o wide && echo '---' && kubectl -n tomcat-app get pod -o wide 2>&1\")",
+      "Bash(ssh -i d:/Learning/kubernetes-selfmanaged/terraform/k8s_id_rsa azureuser@20.55.246.243 \"kubectl -n kube-system get pod -l k8s-app=kube-proxy -o wide && echo '---' && curl -s -m 5 -o /dev/null -w 'HTTP %{http_code}' http://localhost:30080/ 2>&1\")",
+      "Bash(ssh -i d:/Learning/kubernetes-selfmanaged/terraform/k8s_id_rsa azureuser@20.55.246.243 \"sudo iptables -t nat -L KUBE-NODEPORTS -n 2>/dev/null | grep 30080 || echo 'No iptables rule for 30080' && sudo iptables -t nat -L | grep -c KUBE 2>&1\")",
+      "Bash(ssh -i d:/Learning/kubernetes-selfmanaged/terraform/k8s_id_rsa azureuser@20.55.246.243 \"kubectl -n kube-system logs kube-proxy-5lmwn --tail=20 2>&1\")",
+      "Bash(ssh -i d:/Learning/kubernetes-selfmanaged/terraform/k8s_id_rsa azureuser@20.55.246.243 \"sudo iptables -t nat -L KUBE-SERVICES -n | grep -i nginx && echo '---' && sudo iptables -t nat -S | grep 30080 2>&1\")",
+      "Bash(ssh -i d:/Learning/kubernetes-selfmanaged/terraform/k8s_id_rsa azureuser@20.55.246.243 \"sudo iptables -t nat -L KUBE-NODEPORTS -n --line-numbers 2>&1 | head -20\")",
+      "Bash(ssh -i d:/Learning/kubernetes-selfmanaged/terraform/k8s_id_rsa azureuser@20.55.246.243 \"sudo iptables -t nat -L KUBE-NODEPORTS -n -v 2>&1\")",
+      "Bash(ssh -i d:/Learning/kubernetes-selfmanaged/terraform/k8s_id_rsa azureuser@20.55.246.243 \"kubectl -n tomcat-app get svc,endpoints && echo '---' && kubectl -n tomcat-app get ingress -o yaml 2>&1 | grep -A 20 'spec:'\")",
+      "Bash(ssh -i d:/Learning/kubernetes-selfmanaged/terraform/k8s_id_rsa azureuser@20.55.246.243 \"sudo iptables-save | grep 30080 && echo '---' && curl -s -m 5 -o /dev/null -w 'HTTP %{http_code}' http://10.10.1.5:30080/ 2>&1\")",
+      "Bash(ssh -i d:/Learning/kubernetes-selfmanaged/terraform/k8s_id_rsa azureuser@20.55.246.243 \"sudo nft list ruleset 2>/dev/null | grep -c '30080' || echo 'nft not found/no rules' && sudo ipvsadm -L -n 2>/dev/null | grep 30080 || echo 'ipvs: no 30080'\")",
+      "Bash(ssh -i d:/Learning/kubernetes-selfmanaged/terraform/k8s_id_rsa azureuser@20.55.246.243 \"sudo nft list ruleset 2>/dev/null | grep -B5 -A5 '30080'\")",
+      "Bash(ssh -i d:/Learning/kubernetes-selfmanaged/terraform/k8s_id_rsa azureuser@20.55.246.243 \"curl -s -m 5 -o /dev/null -w 'HTTP %{http_code}' http://10.10.1.4:30080/ 2>&1 && echo '' && curl -s -m 5 http://192.168.254.131/ -o /dev/null -w 'ingress-pod HTTP %{http_code}' 2>&1\")",
+      "Bash(ssh -i d:/Learning/kubernetes-selfmanaged/terraform/k8s_id_rsa azureuser@20.55.246.243 \"kubectl -n ingress-nginx patch deployment ingress-nginx-controller --patch '{\\\\\"spec\\\\\":{\\\\\"template\\\\\":{\\\\\"spec\\\\\":{\\\\\"tolerations\\\\\":[{\\\\\"key\\\\\":\\\\\"node-role.kubernetes.io/control-plane\\\\\",\\\\\"operator\\\\\":\\\\\"Exists\\\\\",\\\\\"effect\\\\\":\\\\\"NoSchedule\\\\\"}]}}}}' && kubectl -n ingress-nginx rollout status deployment/ingress-nginx-controller --timeout=120s 2>&1\")",
+      "Bash(ssh -i d:/Learning/kubernetes-selfmanaged/terraform/k8s_id_rsa azureuser@20.55.246.243 \"kubectl -n ingress-nginx get pod -o wide && echo '---' && curl -s -m 5 -o /dev/null -w 'HTTP %{http_code}' http://10.10.1.5:30080/ 2>&1\")",
+      "Bash(ssh -i d:/Learning/kubernetes-selfmanaged/terraform/k8s_id_rsa azureuser@20.55.246.243 \"kubectl -n ingress-nginx patch deployment ingress-nginx-controller --patch '{\\\\\"spec\\\\\":{\\\\\"template\\\\\":{\\\\\"spec\\\\\":{\\\\\"nodeSelector\\\\\":{\\\\\"kubernetes.io/hostname\\\\\":\\\\\"k8s-master\\\\\"}}}}}' && kubectl -n ingress-nginx rollout status deployment/ingress-nginx-controller --timeout=120s 2>&1\")",
+      "Bash(ssh -i d:/Learning/kubernetes-selfmanaged/terraform/k8s_id_rsa azureuser@20.55.246.243 \"curl -s -m 5 http://192.168.235.196/ -o /dev/null -w 'ingress-pod HTTP %{http_code}' && echo '' && kubectl -n ingress-nginx logs ingress-nginx-controller-5fddbc78c-r6t9z --tail=5 2>&1\")",
+      "Bash(ssh -i d:/Learning/kubernetes-selfmanaged/terraform/k8s_id_rsa azureuser@20.55.246.243 \"kubectl -n kube-system get pod -l k8s-app=calico-node -o wide && echo '---' && kubectl get nodes -o wide 2>&1\")",
+      "Bash(ssh -i d:/Learning/kubernetes-selfmanaged/terraform/k8s_id_rsa azureuser@20.55.246.243 \"kubectl -n ingress-nginx exec ingress-nginx-controller-5fddbc78c-r6t9z -- ss -tlnp 2>&1 | head -20\")",
+      "Bash(ssh -i d:/Learning/kubernetes-selfmanaged/terraform/k8s_id_rsa azureuser@20.55.246.243 \"kubectl -n ingress-nginx logs ingress-nginx-controller-5fddbc78c-r6t9z 2>&1 | tail -20\")"
+    ]
+  }
+}
