@@ -135,6 +135,44 @@ ssh -i terraform/k8s_id_rsa azureuser@20.127.130.235 \
 
 ---
 
+## Step 7 — Deploy Gateway API (Optional)
+
+Gateway API is the successor to Ingress. It offers better role separation, richer routing,
+and cross-namespace support. Both Ingress and Gateway API can run at the same time.
+
+```bash
+# Copy manifests and script to master (if not already there)
+scp -i terraform/k8s_id_rsa -r scripts kubernetes azureuser@20.127.130.235:~
+
+# Run the Gateway API deploy script
+ssh -i terraform/k8s_id_rsa azureuser@20.127.130.235 \
+  "chmod +x ~/scripts/04-deploy-gateway-api.sh && ~/scripts/04-deploy-gateway-api.sh"
+```
+
+**What the script does:**
+
+| Step | Command | Purpose |
+|---|---|---|
+| 1 | `kubectl apply -f standard-install.yaml` | Installs the Gateway API CRDs (GatewayClass, Gateway, HTTPRoute) |
+| 2 | `kubectl apply -f nginx-gateway-fabric/deploy.yaml` | Installs NGINX Gateway Fabric controller in `nginx-gateway` namespace |
+| 3 | `kubectl apply -f 06-gatewayclass.yaml` | Registers the NGINX controller as a `GatewayClass` (cluster-scoped) |
+| 4 | `kubectl apply -f 07-gateway.yaml` | Creates the `Gateway` — the network entry point on port 80 |
+| 5 | `kubectl apply -f 08-httproute.yaml` | Creates the `HTTPRoute` — routes all paths to `tomcat-service:80` |
+
+**Verify:**
+```bash
+ssh -i terraform/k8s_id_rsa azureuser@20.127.130.235 \
+  "kubectl get gatewayclasses && kubectl -n tomcat-app get gateways,httproutes"
+```
+
+**Test (from inside the cluster):**
+```bash
+kubectl -n tomcat-app run curltest --rm -it --image=curlimages/curl --restart=Never \
+  -- curl -s http://tomcat-service/
+```
+
+---
+
 ## Troubleshooting — ingress webhook timeout
 
 **Error:**
@@ -296,6 +334,35 @@ tomcat pod (192.168.254.132 or .133, on k8s-worker)
 
 ---
 
+## Gateway API traffic flow (optional step 7)
+
+```
+Browser → <nginx-gateway-svc external IP>:80
+  │
+  │ Azure NSG: allow TCP 80 inbound
+  ▼
+NGINX Gateway Fabric pod (nginx-gateway namespace, on k8s-master)
+  matches HTTPRoute: path prefix / → tomcat-service:80
+  │
+  │ Calico VXLAN tunnel (UDP 4789) — cross-node overlay
+  ▼
+tomcat pod (192.168.254.132 or .133, on k8s-worker)
+  port 8080
+```
+
+**Gateway API vs Ingress:**
+
+| | Ingress | Gateway API |
+|---|---|---|
+| API version | `networking.k8s.io/v1` | `gateway.networking.k8s.io/v1` |
+| Controller | ingress-nginx (NodePort 30080) | NGINX Gateway Fabric (LoadBalancer/NodePort 80) |
+| Namespace | `ingress-nginx` | `nginx-gateway` |
+| Route object | `Ingress` | `HTTPRoute` |
+| Multi-team routing | Limited | Built-in (cross-namespace refs) |
+| Conflict with other | None | None — both run in parallel |
+
+---
+
 ## Key concepts
 
 | Concept | What it is |
@@ -310,6 +377,9 @@ tomcat pod (192.168.254.132 or .133, on k8s-worker)
 | Ingress | Kubernetes API object that defines HTTP routing rules (host/path → service) |
 | ingress-nginx | An ingress controller: watches Ingress objects and configures NGINX accordingly |
 | kube-proxy | Runs on each node; programs nftables/iptables rules for Service routing and NodePort NAT |
+| Gateway API | Successor to Ingress; three resources: GatewayClass (controller), Gateway (entry point), HTTPRoute (rules) |
+| GatewayClass | Cluster-scoped resource that names the controller implementation (e.g. NGINX Gateway Fabric) |
+| NGINX Gateway Fabric | Gateway API controller by NGINX Inc; replaces ingress-nginx in the Gateway API model |
 
 ---
 

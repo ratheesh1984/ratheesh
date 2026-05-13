@@ -1,0 +1,20 @@
+---
+# Gateway API - HTTPRoute resource
+# Defines HTTP routing rules (replaces Ingress)
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: tomcat-route
+  namespace: tomcat-app
+spec:
+  parentRefs:
+    - name: tomcat-gateway
+      namespace: tomcat-app
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: tomcat-service
+          port: 80

@@ -89,6 +89,37 @@ curl http://<MASTER_PUBLIC_IP>:30080/
 
 You should get the sample JSP showing pod hostname, IP, and timestamp. Refresh a few times — the hostname changes between the two replicas, proving the ingress is load-balancing.
 
+### 6. Optional: Deploy with Gateway API
+
+Gateway API is a newer Kubernetes standard for routing (successor to Ingress) with advanced features like:
+- Better separation of concerns (different roles manage routes vs. infrastructure)
+- Cross-namespace routing capabilities
+- Cleaner resource model for complex routing scenarios
+
+To deploy the Tomcat app using Gateway API instead of (or alongside) Ingress:
+
+```bash
+# on the master (same SSH session)
+chmod +x 03-deploy-gateway-api.sh
+./03-deploy-gateway-api.sh
+```
+
+This deploys:
+- **GatewayClass** (`06-gatewayclass.yaml`): Defines the NGINX Gateway Fabric controller
+- **Gateway** (`07-gateway.yaml`): The network entry point (listens on port 80)
+- **HTTPRoute** (`08-httproute.yaml`): Routing rules (replaces Ingress)
+- **NGINX Gateway Fabric controller**: The Gateway API implementation
+
+Then test the same way:
+
+```bash
+curl http://<WORKER_PUBLIC_IP>:80/
+# or from inside the cluster:
+kubectl -n tomcat-app run curltest --rm -it --image=curlimages/curl --restart=Never -- curl -s http://tomcat-service/
+```
+
+**Note:** Both Ingress and Gateway API can coexist. Gateway API runs in the `nginx-gateway` namespace; the classic Ingress runs in `ingress-nginx`. They don't conflict.
+
 ## Cleanup
 
 ```bash
@@ -98,6 +129,7 @@ terraform destroy
 
 ## Notes / variations
 
+- **Gateway API vs. Ingress:** This setup includes both. Ingress (NGINX Ingress Controller) is deployed by default in step 2; Gateway API (NGINX Gateway Fabric) is optional in step 6. Gateway API offers better role separation, multi-team isolation, and advanced routing. Both can run in parallel without conflict.
 - **Why NodePort, not LoadBalancer?** A bare-metal kubeadm cluster has no Azure cloud controller, so `Service: LoadBalancer` would stay `<pending>`. The ingress controller is exposed as NodePort 30080, and the NSG opens 30000–32767. If you'd rather have a real Azure LB in front, add an `azurerm_lb` in Terraform pointing at both NICs on port 30080. (You could also switch to AKS, but then this whole exercise collapses to one Terraform module.)
 - **SSH lockdown:** `allowed_ssh_cidr` defaults to `0.0.0.0/0`. Set it to `<your-ip>/32` in `terraform.tfvars`.
 - **VM size:** `Standard_B2s` is the practical floor for kubeadm (2 vCPU / 4 GB).

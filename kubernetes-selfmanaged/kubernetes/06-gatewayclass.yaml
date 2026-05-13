@@ -1,0 +1,10 @@
+---
+# Gateway API - GatewayClass resource
+# Cluster-scoped: no namespace field allowed
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: nginx
+spec:
+  controllerName: gateway.nginx.org/nginx-gateway-controller
+  description: "NGINX Gateway Fabric controller"

@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gateway API — What It Is & What We Did</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f6fa; color: #222; line-height: 1.7; }
+
+    header {
+      background: linear-gradient(135deg, #1a73e8, #0d47a1);
+      color: white;
+      padding: 2.5rem 3rem;
+    }
+    header h1 { font-size: 2rem; margin-bottom: 0.4rem; }
+    header p  { font-size: 1.05rem; opacity: 0.88; }
+
+    nav {
+      background: #0d47a1;
+      padding: 0.6rem 3rem;
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+    nav a { color: #90caf9; text-decoration: none; font-size: 0.9rem; }
+    nav a:hover { color: #fff; }
+
+    main { max-width: 1000px; margin: 2rem auto; padding: 0 1.5rem 4rem; }
+
+    section { margin-bottom: 2.5rem; }
+
+    h2 {
+      font-size: 1.4rem;
+      color: #1a73e8;
+      border-left: 4px solid #1a73e8;
+      padding-left: 0.75rem;
+      margin-bottom: 1rem;
+      margin-top: 2rem;
+    }
+    h3 { font-size: 1.1rem; color: #333; margin: 1.2rem 0 0.5rem; }
+
+    p { margin-bottom: 0.9rem; }
+
+    .card {
+      background: white;
+      border-radius: 8px;
+      padding: 1.5rem 2rem;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+      margin-bottom: 1.5rem;
+    }
+
+    .highlight {
+      background: #e8f0fe;
+      border-left: 4px solid #1a73e8;
+      padding: 1rem 1.5rem;
+      border-radius: 0 6px 6px 0;
+      margin: 1rem 0;
+    }
+
+    .warning {
+      background: #fff8e1;
+      border-left: 4px solid #f9a825;
+      padding: 1rem 1.5rem;
+      border-radius: 0 6px 6px 0;
+      margin: 1rem 0;
+    }
+
+    .success {
+      background: #e8f5e9;
+      border-left: 4px solid #2e7d32;
+      padding: 1rem 1.5rem;
+      border-radius: 0 6px 6px 0;
+      margin: 1rem 0;
+    }
+
+    code {
+      background: #f1f3f4;
+      padding: 0.15em 0.45em;
+      border-radius: 4px;
+      font-family: 'Consolas', monospace;
+      font-size: 0.9em;
+      color: #c0392b;
+    }
+
+    pre {
+      background: #1e2a3a;
+      color: #e8eaf0;
+      padding: 1.2rem 1.5rem;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-family: 'Consolas', monospace;
+      font-size: 0.88rem;
+      margin: 0.8rem 0 1.2rem;
+      line-height: 1.6;
+    }
+    pre .comment { color: #78909c; }
+    pre .cmd     { color: #80cbc4; }
+    pre .arrow   { color: #ffcc80; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+      font-size: 0.92rem;
+    }
+    th {
+      background: #1a73e8;
+      color: white;
+      padding: 0.7rem 1rem;
+      text-align: left;
+    }
+    td {
+      padding: 0.6rem 1rem;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    tr:nth-child(even) td { background: #f8f9ff; }
+    tr:last-child td { border-bottom: none; }
+
+    .step {
+      display: flex;
+      gap: 1.2rem;
+      align-items: flex-start;
+      margin-bottom: 1.2rem;
+    }
+    .step-num {
+      background: #1a73e8;
+      color: white;
+      border-radius: 50%;
+      width: 2rem;
+      height: 2rem;
+      min-width: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 0.9rem;
+      margin-top: 0.1rem;
+    }
+    .step-body h4 { font-size: 1rem; margin-bottom: 0.3rem; color: #1a73e8; }
+    .step-body p  { margin: 0; font-size: 0.95rem; }
+
+    .flow {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0;
+      margin: 1rem 0;
+    }
+    .flow-box {
+      background: #1a73e8;
+      color: white;
+      padding: 0.6rem 1.4rem;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-family: 'Consolas', monospace;
+      min-width: 340px;
+    }
+    .flow-box.grey  { background: #607d8b; }
+    .flow-box.green { background: #2e7d32; }
+    .flow-box.orange{ background: #e65100; }
+    .flow-arrow {
+      font-size: 1.4rem;
+      color: #1a73e8;
+      line-height: 1.2;
+      margin-left: 1rem;
+    }
+    .flow-label {
+      font-size: 0.78rem;
+      color: #888;
+      margin-left: 1rem;
+      margin-bottom: 0.2rem;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.2em 0.7em;
+      border-radius: 12px;
+      font-size: 0.78rem;
+      font-weight: bold;
+      margin-left: 0.4rem;
+      vertical-align: middle;
+    }
+    .badge.fixed  { background: #e8f5e9; color: #2e7d32; }
+    .badge.bug    { background: #ffebee; color: #c62828; }
+    .badge.new    { background: #e8f0fe; color: #1a73e8; }
+
+    .toc { background: white; padding: 1.2rem 1.8rem; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+    .toc h3 { margin-bottom: 0.6rem; color: #555; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .toc ol { padding-left: 1.2rem; }
+    .toc li { margin: 0.3rem 0; }
+    .toc a  { color: #1a73e8; text-decoration: none; font-size: 0.92rem; }
+    .toc a:hover { text-decoration: underline; }
+
+    footer { text-align: center; padding: 2rem; color: #888; font-size: 0.85rem; border-top: 1px solid #e0e0e0; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Kubernetes Gateway API</h1>
+  <p>What it is, what we built, and every issue we fixed — end to end.</p>
+</header>
+
+<nav>
+  <a href="#what-is">What is Gateway API?</a>
+  <a href="#vs-ingress">Gateway API vs Ingress</a>
+  <a href="#resources">The 3 Resources</a>
+  <a href="#traffic">Traffic Flow</a>
+  <a href="#what-we-did">What We Did</a>
+  <a href="#issues">Issues Fixed</a>
+  <a href="#result">Final Result</a>
+</nav>
+
+<main>
+
+  <!-- TOC -->
+  <section>
+    <div class="toc">
+      <h3>Contents</h3>
+      <ol>
+        <li><a href="#what-is">What is Kubernetes Gateway API?</a></li>
+        <li><a href="#vs-ingress">Gateway API vs Ingress — Why the change?</a></li>
+        <li><a href="#resources">The 3 Gateway API Resources Explained</a></li>
+        <li><a href="#traffic">How Traffic Flows Through Gateway API</a></li>
+        <li><a href="#what-we-did">What We Did (Step by Step)</a></li>
+        <li><a href="#issues">Every Issue We Hit and How We Fixed It</a></li>
+        <li><a href="#result">Final Result</a></li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- SECTION 1 -->
+  <section id="what-is">
+    <h2>1. What is Kubernetes Gateway API?</h2>
+    <div class="card">
+      <p>
+        <strong>Gateway API</strong> is a set of Kubernetes resources that control how network traffic
+        enters your cluster and reaches your applications. It was created by the Kubernetes networking
+        community and is now the official successor to the older <strong>Ingress</strong> resource.
+      </p>
+      <p>
+        Think of it as a <strong>smart traffic director</strong> sitting at the edge of your cluster.
+        Every HTTP request from the internet passes through it, and it decides which application to
+        send the request to based on rules you define.
+      </p>
+      <div class="highlight">
+        <strong>Simple analogy:</strong> Imagine a hotel reception desk. Guests (HTTP requests) arrive
+        at the front door (Gateway). The receptionist (NGINX Gateway Fabric controller) looks up the
+        room directory (HTTPRoute rules) and sends each guest to the right room (your app pod).
+      </div>
+      <p>
+        Gateway API is not built into Kubernetes by default. It is installed as
+        <strong>Custom Resource Definitions (CRDs)</strong> — extra object types added on top of
+        Kubernetes — and then a <strong>controller</strong> (in our case NGINX Gateway Fabric)
+        watches those objects and programs the actual NGINX proxy.
+      </p>
+    </div>
+  </section>
+
+  <!-- SECTION 2 -->
+  <section id="vs-ingress">
+    <h2>2. Gateway API vs Ingress — Why the Change?</h2>
+    <div class="card">
+      <p>
+        The older <strong>Ingress</strong> resource (which this cluster already uses on port 30080)
+        was designed years ago and has limitations. Gateway API was built to fix them.
+      </p>
+
+      <table>
+        <tr>
+          <th>Feature</th>
+          <th>Ingress (old)</th>
+          <th>Gateway API (new)</th>
+        </tr>
+        <tr>
+          <td>Kubernetes version</td>
+          <td>Stable since v1.0</td>
+          <td>Stable since v1.28 (2023)</td>
+        </tr>
+        <tr>
+          <td>Resource type</td>
+          <td>Single <code>Ingress</code> object</td>
+          <td>3 separate objects: GatewayClass, Gateway, HTTPRoute</td>
+        </tr>
+        <tr>
+          <td>Who controls what</td>
+          <td>One resource mixes infrastructure + routing</td>
+          <td>Clear separation: infra team owns Gateway, app team owns HTTPRoute</td>
+        </tr>
+        <tr>
+          <td>Cross-namespace routing</td>
+          <td>Not supported</td>
+          <td>Built-in — route to services in other namespaces</td>
+        </tr>
+        <tr>
+          <td>Traffic splitting</td>
+          <td>Limited / annotation-based hacks</td>
+          <td>Native (canary, A/B testing with weights)</td>
+        </tr>
+        <tr>
+          <td>Header / path matching</td>
+          <td>Basic</td>
+          <td>Advanced (regex, header matching, query params)</td>
+        </tr>
+        <tr>
+          <td>Can they coexist?</td>
+          <td colspan="2" style="text-align:center;">✅ Yes — both run in parallel without conflict</td>
+        </tr>
+      </table>
+
+      <div class="highlight">
+        In this cluster, <strong>Ingress (ingress-nginx)</strong> still runs on port <strong>30080</strong>
+        and <strong>Gateway API (NGINX Gateway Fabric)</strong> runs on port <strong>31417</strong>.
+        They handle traffic independently.
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 3 -->
+  <section id="resources">
+    <h2>3. The 3 Gateway API Resources Explained</h2>
+    <div class="card">
+      <p>Gateway API splits routing into three distinct Kubernetes objects. Each has a specific job.</p>
+
+      <h3>① GatewayClass</h3>
+      <div class="highlight">
+        <strong>What it is:</strong> Declares which software (controller) will handle the gateways.<br/>
+        <strong>Who creates it:</strong> The cluster infrastructure team (or the controller itself).<br/>
+        <strong>Scope:</strong> Cluster-wide (no namespace — one per controller type).
+      </div>
+      <pre><span class="comment"># 06-gatewayclass.yaml</span>
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: nginx                          <span class="comment"># name used by Gateway resources</span>
+spec:
+  controllerName: gateway.nginx.org/nginx-gateway-controller</pre>
+      <p>
+        <strong>Analogy:</strong> This is like choosing which airline operates the airport.
+        You're saying "all Gateways of class <code>nginx</code> are managed by NGINX Gateway Fabric."
+      </p>
+
+      <h3>② Gateway</h3>
+      <div class="highlight">
+        <strong>What it is:</strong> Defines a network entry point — which port and protocol to listen on.<br/>
+        <strong>Who creates it:</strong> The cluster/platform team.<br/>
+        <strong>Scope:</strong> Namespaced (lives in a specific namespace).
+      </div>
+      <pre><span class="comment"># 07-gateway.yaml</span>
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: tomcat-gateway
+  namespace: tomcat-app
+spec:
+  gatewayClassName: nginx              <span class="comment"># links to the GatewayClass above</span>
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
+      allowedRoutes:
+        namespaces:
+          from: Same                   <span class="comment"># only HTTPRoutes from tomcat-app namespace</span></pre>
+      <p>
+        <strong>Analogy:</strong> This is the airport terminal — it defines gate 80 is open for
+        HTTP flights. Only routes from the same terminal (namespace) are allowed to board.
+      </p>
+
+      <h3>③ HTTPRoute</h3>
+      <div class="highlight">
+        <strong>What it is:</strong> The actual routing rules — which URL paths go to which service.<br/>
+        <strong>Who creates it:</strong> The application team.<br/>
+        <strong>Scope:</strong> Namespaced (lives with the app).
+      </div>
+      <pre><span class="comment"># 08-httproute.yaml</span>
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: tomcat-route
+  namespace: tomcat-app
+spec:
+  parentRefs:
+    - name: tomcat-gateway             <span class="comment"># attach to the Gateway above</span>
+      namespace: tomcat-app
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /                   <span class="comment"># match ALL paths</span>
+      backendRefs:
+        - name: tomcat-service         <span class="comment"># send traffic to this ClusterIP service</span>
+          port: 80</pre>
+      <p>
+        <strong>Analogy:</strong> This is the flight manifest — it says "all passengers (requests)
+        on gate 80 with any destination (/) go to the Tomcat boarding gate (tomcat-service:80)."
+      </p>
+    </div>
+  </section>
+
+  <!-- SECTION 4 -->
+  <section id="traffic">
+    <h2>4. How Traffic Flows Through Gateway API</h2>
+    <div class="card">
+
+      <h3>Complete request journey</h3>
+
+      <div class="flow">
+        <div class="flow-box">Browser: http://20.127.130.235:31417/</div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-label">Azure NSG: AllowNodePorts (30000–32767) ✅</div>
+        <div class="flow-box grey">k8s-master: NodePort 31417 → nginx-gateway Service (LoadBalancer)</div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-label">kube-proxy DNAT: routes to NGINX Gateway Fabric pod (same node)</div>
+        <div class="flow-box orange">nginx-gateway-fabric pod (on k8s-master)</div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-label">Reads HTTPRoute rules → matches path "/" → forward to tomcat-service:80</div>
+        <div class="flow-box grey">tomcat-service (ClusterIP 10.98.213.16:80) — internal hop</div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-label">Calico VXLAN tunnel (UDP 4789) — cross-node overlay to worker</div>
+        <div class="flow-box green">tomcat pod on k8s-worker :8080 → 200 OK</div>
+      </div>
+
+      <div class="highlight" style="margin-top:1.2rem;">
+        <strong>Key point:</strong> The <code>tomcat-service</code> (ClusterIP) is still used for the
+        internal hop from the gateway pod to the tomcat pod. NodePort is only needed at the very edge
+        because this is a bare kubeadm cluster — no Azure LoadBalancer is attached.
+      </div>
+
+      <h3>Component responsibilities</h3>
+      <table>
+        <tr>
+          <th>Component</th>
+          <th>Where it runs</th>
+          <th>Job</th>
+        </tr>
+        <tr>
+          <td>nginx-gateway pod</td>
+          <td>k8s-master (pinned)</td>
+          <td>Reads GatewayClass, Gateway, HTTPRoute objects and programs NGINX proxy</td>
+        </tr>
+        <tr>
+          <td>nginx-gateway Service</td>
+          <td>nginx-gateway namespace</td>
+          <td>Exposes the controller pod via NodePort 31417 (LoadBalancer type, but no cloud LB)</td>
+        </tr>
+        <tr>
+          <td>tomcat-service</td>
+          <td>tomcat-app namespace</td>
+          <td>Internal ClusterIP — routes from gateway pod to tomcat pods</td>
+        </tr>
+        <tr>
+          <td>tomcat pods × 2</td>
+          <td>k8s-worker</td>
+          <td>Serve the actual Tomcat web app on port 8080</td>
+        </tr>
+      </table>
+    </div>
+  </section>
+
+  <!-- SECTION 5 -->
+  <section id="what-we-did">
+    <h2>5. What We Did (Step by Step)</h2>
+    <div class="card">
+
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <h4>Created the 3 Gateway API manifest files</h4>
+          <p>
+            <code>06-gatewayclass.yaml</code>, <code>07-gateway.yaml</code>, <code>08-httproute.yaml</code>
+            and the deploy script <code>scripts/04-deploy-gateway-api.sh</code> were written under
+            <code>kubernetes-selfmanaged/</code>.
+          </p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <h4>Added Gateway API section to DEPLOYMENT_GUIDE.md</h4>
+          <p>
+            Added Step 7 (deploy commands), a Gateway API traffic flow diagram, comparison table vs
+            Ingress, and new rows in the key concepts table.
+          </p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <h4>Restarted the master VM (it was unreachable)</h4>
+          <p>
+            The VM was running in Azure but SSH timed out and the Azure run-command agent was
+            unresponsive. Used <code>az vm restart</code> to recover it.
+          </p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <h4>Copied files and ran the deploy script</h4>
+          <p>
+            Used <code>scp</code> to push the manifests into <code>~/scripts/</code> and
+            <code>~/kubernetes/</code> on the master, then executed
+            <code>04-deploy-gateway-api.sh</code>.
+          </p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-body">
+          <h4>Debugged and fixed 5 issues (see next section)</h4>
+          <p>
+            Hit bugs during deployment — wrong controller name, missing CRDs, conflicting Gateway,
+            invalid hostname wildcard, and pod on wrong node. All fixed.
+          </p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">6</div>
+        <div class="step-body">
+          <h4>Verified end-to-end from inside the cluster</h4>
+          <p>
+            <code>curl http://localhost:31417/</code> on the master returned the Tomcat HTML page —
+            Gateway API is routing traffic correctly.
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- SECTION 6 -->
+  <section id="issues">
+    <h2>6. Every Issue We Hit and How We Fixed It</h2>
+
+    <!-- Issue 1 -->
+    <div class="card">
+      <h3>Issue 1 — GatewayClass had a <code>namespace</code> field <span class="badge bug">Bug</span> <span class="badge fixed">Fixed</span></h3>
+      <p>
+        <strong>Problem:</strong> <code>GatewayClass</code> is a <em>cluster-scoped</em> resource in
+        Kubernetes — it does not belong to any namespace (like <code>Node</code> or
+        <code>PersistentVolume</code>). The original YAML had <code>namespace: tomcat-app</code> which
+        would be silently ignored or cause errors.
+      </p>
+      <table>
+        <tr><th>Before (wrong)</th><th>After (correct)</th></tr>
+        <tr>
+          <td><pre style="margin:0">metadata:
+  name: nginx
+  namespace: tomcat-app  ❌</pre></td>
+          <td><pre style="margin:0">metadata:
+  name: nginx
+  <span class="comment"># no namespace — cluster-scoped</span> ✅</pre></td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- Issue 2 -->
+    <div class="card">
+      <h3>Issue 2 — Wrong controller name <span class="badge bug">Bug</span> <span class="badge fixed">Fixed</span></h3>
+      <p>
+        <strong>Problem:</strong> The <code>controllerName</code> in GatewayClass was
+        <code>nginx.org/nginx-gateway-controller</code>. The correct name for NGINX Gateway Fabric
+        is <code>gateway.nginx.org/nginx-gateway-controller</code>. The controller only picks up
+        GatewayClass objects whose <code>controllerName</code> matches exactly — a wrong name means
+        the controller ignores all your Gateways.
+      </p>
+      <table>
+        <tr><th>Before (wrong)</th><th>After (correct)</th></tr>
+        <tr>
+          <td><code>nginx.org/nginx-gateway-controller</code> ❌</td>
+          <td><code>gateway.nginx.org/nginx-gateway-controller</code> ✅</td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- Issue 3 -->
+    <div class="card">
+      <h3>Issue 3 — NGINX Gateway Fabric CRDs not installed first <span class="badge bug">Bug</span> <span class="badge fixed">Fixed</span></h3>
+      <p>
+        <strong>Problem:</strong> NGINX Gateway Fabric v1.4.0 requires its own custom CRDs
+        (<code>NginxGateway</code>, <code>ClientSettingsPolicy</code>, etc.) to be installed
+        <em>before</em> the main <code>deploy.yaml</code>. The original script only installed
+        the standard Gateway API CRDs but skipped the NGINX-specific CRDs.
+      </p>
+      <p>
+        <strong>Error seen:</strong>
+      </p>
+      <pre>no matches for kind "NginxGateway" in version "gateway.nginx.org/v1alpha1"
+ensure CRDs are installed first</pre>
+      <p><strong>Fix:</strong> Added a CRD install step before the main deploy:</p>
+      <pre><span class="comment"># Step 1 — standard Gateway API CRDs</span>
+<span class="cmd">kubectl apply -f</span> https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.1.0/standard-install.yaml
+
+<span class="comment"># Step 2 — NGINX Gateway Fabric specific CRDs  ← new step added</span>
+<span class="cmd">kubectl apply -f</span> https://raw.githubusercontent.com/nginxinc/nginx-gateway-fabric/v1.4.0/deploy/crds.yaml
+
+<span class="comment"># Step 3 — NGINX Gateway Fabric controller</span>
+<span class="cmd">kubectl apply -f</span> https://raw.githubusercontent.com/nginxinc/nginx-gateway-fabric/v1.4.0/deploy/default/deploy.yaml</pre>
+    </div>
+
+    <!-- Issue 4 -->
+    <div class="card">
+      <h3>Issue 4 — Conflicting GatewayClass / immutable <code>controllerName</code> <span class="badge bug">Bug</span> <span class="badge fixed">Fixed</span></h3>
+      <p>
+        <strong>Problem:</strong> A <code>GatewayClass</code> named <code>nginx</code> already existed
+        on the cluster from a previous attempt (with the wrong <code>controllerName</code>).
+        Kubernetes does not allow you to <em>change</em> <code>spec.controllerName</code> on an
+        existing GatewayClass — it is an <strong>immutable field</strong>.
+      </p>
+      <pre>GatewayClass.gateway.networking.k8s.io "nginx" is invalid:
+  spec.controllerName: Invalid value: "string": Value is immutable</pre>
+      <p>
+        <strong>Fix:</strong> Delete the old GatewayClass and let the deploy.yaml recreate it with
+        the correct controller name.
+      </p>
+      <pre><span class="cmd">kubectl delete gatewayclass nginx --ignore-not-found</span>
+<span class="comment"># then re-apply deploy.yaml — it creates a fresh one with the right controllerName</span></pre>
+    </div>
+
+    <!-- Issue 5 -->
+    <div class="card">
+      <h3>Issue 5 — Conflicting Gateway in the <code>default</code> namespace <span class="badge bug">Bug</span> <span class="badge fixed">Fixed</span></h3>
+      <p>
+        <strong>Problem:</strong> NGINX Gateway Fabric v1.4.0's <code>deploy.yaml</code> automatically
+        creates a sample <code>Gateway</code> object called <code>nginx-gateway</code> in the
+        <code>default</code> namespace. This Gateway was already accepted and owned port 80.
+        When our <code>tomcat-gateway</code> in <code>tomcat-app</code> tried to claim the same
+        port, the controller rejected it with:
+      </p>
+      <pre>The resource is ignored due to a conflicting Gateway resource
+Reason: GatewayConflict</pre>
+      <p>
+        <strong>Fix:</strong> Delete the auto-created default Gateway so ours can take over.
+      </p>
+      <pre><span class="cmd">kubectl -n default delete gateway nginx-gateway</span></pre>
+      <p>
+        After deletion, <code>tomcat-gateway</code> immediately became <strong>Programmed: True</strong>.
+      </p>
+    </div>
+
+    <!-- Issue 6 -->
+    <div class="card">
+      <h3>Issue 6 — Invalid wildcard hostname <code>"*"</code> in HTTPRoute <span class="badge bug">Bug</span> <span class="badge fixed">Fixed</span></h3>
+      <p>
+        <strong>Problem:</strong> Gateway API v1 does not accept a bare <code>*</code> as a hostname.
+        The spec requires either a valid domain name (e.g. <code>myapp.example.com</code>) or
+        a wildcard subdomain (e.g. <code>*.example.com</code>). A lone <code>*</code> is invalid.
+      </p>
+      <pre>The HTTPRoute "tomcat-route" is invalid:
+  spec.hostnames[0]: Invalid value: "*":
+  should match '^(\*\.)?[a-z0-9]([-a-z0-9]*[a-z0-9])?...'</pre>
+      <p>
+        <strong>Fix:</strong> Remove the <code>hostnames</code> field entirely. When omitted, the
+        HTTPRoute matches <em>all</em> hostnames — which is exactly what we want.
+      </p>
+      <table>
+        <tr><th>Before (invalid)</th><th>After (correct)</th></tr>
+        <tr>
+          <td><pre style="margin:0">hostnames:
+  - "*"    ❌</pre></td>
+          <td><pre style="margin:0"><span class="comment"># hostnames omitted = match all ✅</span></pre></td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- Issue 7 -->
+    <div class="card">
+      <h3>Issue 7 — nginx-gateway pod running on worker, traffic enters master <span class="badge bug">Bug</span> <span class="badge fixed">Fixed</span></h3>
+      <p>
+        <strong>Problem:</strong> The nginx-gateway pod was scheduled on <code>k8s-worker</code>
+        (which has no public IP). External traffic from your browser hits the master's public IP
+        <code>20.127.130.235:31417</code>, gets DNAT'd across nodes to the worker pod, but the
+        return path was unreliable — causing the browser timeout you saw.
+      </p>
+      <p>
+        This is the same root cause documented in <code>DEPLOYMENT_GUIDE.md</code> for the
+        ingress-nginx controller earlier.
+      </p>
+      <p>
+        <strong>Fix:</strong> Pin the nginx-gateway pod to the master node using
+        <code>nodeSelector</code> + a <code>toleration</code> for the control-plane taint
+        (the taint prevents normal pods scheduling on the master by default).
+      </p>
+      <pre><span class="cmd">kubectl -n nginx-gateway patch deployment nginx-gateway --patch</span> \
+  <span class="arrow">'{"spec":{"template":{"spec":{</span>
+    <span class="arrow">"tolerations":[{"key":"node-role.kubernetes.io/control-plane",</span>
+                  <span class="arrow">"operator":"Exists","effect":"NoSchedule"}],</span>
+    <span class="arrow">"nodeSelector":{"kubernetes.io/hostname":"k8s-master"}</span>
+  <span class="arrow">}}}}'</span></pre>
+      <table>
+        <tr><th></th><th>Before</th><th>After</th></tr>
+        <tr>
+          <td>Pod location</td>
+          <td>k8s-worker (no public IP) ❌</td>
+          <td>k8s-master (public IP 20.127.130.235) ✅</td>
+        </tr>
+        <tr>
+          <td>Browser result</td>
+          <td>Connection timed out ❌</td>
+          <td>Tomcat app loads ✅</td>
+        </tr>
+      </table>
+    </div>
+
+  </section>
+
+  <!-- SECTION 7 -->
+  <section id="result">
+    <h2>7. Final Result</h2>
+    <div class="card">
+      <div class="success">
+        <strong>Gateway API is live.</strong> The Tomcat app is accessible via both routes:
+        <ul style="margin-top:0.5rem; padding-left:1.2rem;">
+          <li><strong>Ingress (original):</strong> <code>http://20.127.130.235:30080/</code></li>
+          <li><strong>Gateway API (new):</strong> <code>http://20.127.130.235:31417/</code></li>
+        </ul>
+      </div>
+
+      <h3 style="margin-top:1.2rem;">Running resources</h3>
+      <table>
+        <tr><th>Kind</th><th>Name</th><th>Namespace</th><th>Status</th></tr>
+        <tr><td>GatewayClass</td><td>nginx</td><td>cluster-wide</td><td>✅ Accepted</td></tr>
+        <tr><td>Gateway</td><td>tomcat-gateway</td><td>tomcat-app</td><td>✅ Programmed</td></tr>
+        <tr><td>HTTPRoute</td><td>tomcat-route</td><td>tomcat-app</td><td>✅ Accepted</td></tr>
+        <tr><td>Deployment</td><td>nginx-gateway</td><td>nginx-gateway</td><td>✅ 2/2 Running (on master)</td></tr>
+        <tr><td>Service</td><td>nginx-gateway</td><td>nginx-gateway</td><td>✅ NodePort 31417</td></tr>
+      </table>
+
+      <h3 style="margin-top:1.2rem;">Files created / modified</h3>
+      <table>
+        <tr><th>File</th><th>Change</th></tr>
+        <tr><td><code>kubernetes/06-gatewayclass.yaml</code></td><td><span class="badge new">new</span> Cluster-scoped GatewayClass for NGINX</td></tr>
+        <tr><td><code>kubernetes/07-gateway.yaml</code></td><td><span class="badge new">new</span> Gateway listening on port 80 in tomcat-app</td></tr>
+        <tr><td><code>kubernetes/08-httproute.yaml</code></td><td><span class="badge new">new</span> HTTPRoute: all paths → tomcat-service:80</td></tr>
+        <tr><td><code>scripts/04-deploy-gateway-api.sh</code></td><td><span class="badge new">new</span> One-click deploy script (CRDs → controller → manifests)</td></tr>
+        <tr><td><code>GATEWAY_API_DEPLOYMENT.md</code></td><td><span class="badge fixed">updated</span> Cloud Shell instructions with correct steps</td></tr>
+        <tr><td><code>DEPLOYMENT_GUIDE.md</code></td><td><span class="badge fixed">updated</span> Step 7 + traffic flow + key concepts</td></tr>
+      </table>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  Kubernetes Self-Managed Cluster on Azure &mdash; Gateway API deployment guide
+</footer>
+
+</body>
+</html>

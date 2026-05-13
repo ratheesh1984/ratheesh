@@ -35,7 +35,20 @@
       "Bash(ssh -i d:/Learning/kubernetes-selfmanaged/terraform/k8s_id_rsa azureuser@20.55.246.243 \"curl -s -m 5 http://192.168.235.196/ -o /dev/null -w 'ingress-pod HTTP %{http_code}' && echo '' && kubectl -n ingress-nginx logs ingress-nginx-controller-5fddbc78c-r6t9z --tail=5 2>&1\")",
       "Bash(ssh -i d:/Learning/kubernetes-selfmanaged/terraform/k8s_id_rsa azureuser@20.55.246.243 \"kubectl -n kube-system get pod -l k8s-app=calico-node -o wide && echo '---' && kubectl get nodes -o wide 2>&1\")",
       "Bash(ssh -i d:/Learning/kubernetes-selfmanaged/terraform/k8s_id_rsa azureuser@20.55.246.243 \"kubectl -n ingress-nginx exec ingress-nginx-controller-5fddbc78c-r6t9z -- ss -tlnp 2>&1 | head -20\")",
-      "Bash(ssh -i d:/Learning/kubernetes-selfmanaged/terraform/k8s_id_rsa azureuser@20.55.246.243 \"kubectl -n ingress-nginx logs ingress-nginx-controller-5fddbc78c-r6t9z 2>&1 | tail -20\")"
+      "Bash(ssh -i d:/Learning/kubernetes-selfmanaged/terraform/k8s_id_rsa azureuser@20.55.246.243 \"kubectl -n ingress-nginx logs ingress-nginx-controller-5fddbc78c-r6t9z 2>&1 | tail -20\")",
+      "Bash(ssh -i \"d:/Learning/kubernetes-selfmanaged/terraform/k8s_id_rsa\" -o StrictHostKeyChecking=no -o ConnectTimeout=10 azureuser@20.127.130.235 \"kubectl get nodes\")",
+      "Bash(terraform output *)",
+      "Bash(az vm *)",
+      "Bash(icacls \"d:\\\\Learning\\\\kubernetes-selfmanaged\\\\terraform\\\\k8s_id_rsa\")",
+      "Bash(ssh -i \"d:/Learning/kubernetes-selfmanaged/terraform/k8s_id_rsa\" -o StrictHostKeyChecking=no -o ConnectTimeout=15 azureuser@20.127.130.235 \"kubectl get nodes\")",
+      "Bash(az network *)",
+      "Bash(curl -s --max-time 5 https://api.ipify.org)",
+      "Bash(ping -c 3 -W 5 20.127.130.235)",
+      "Bash(ping -n 3 20.127.130.235)",
+      "Bash(scp -i d:/Learning/kubernetes-selfmanaged/terraform/k8s_id_rsa -o StrictHostKeyChecking=no d:/Learning/kubernetes-selfmanaged/scripts/04-deploy-gateway-api.sh d:/Learning/kubernetes-selfmanaged/kubernetes/06-gatewayclass.yaml d:/Learning/kubernetes-selfmanaged/kubernetes/07-gateway.yaml d:/Learning/kubernetes-selfmanaged/kubernetes/08-httproute.yaml azureuser@20.127.130.235:~/)",
+      "Bash(ssh -i d:/Learning/kubernetes-selfmanaged/terraform/k8s_id_rsa -o StrictHostKeyChecking=no azureuser@20.127.130.235 ~/scripts/04-deploy-gateway-api.sh)",
+      "Bash(ssh -i d:/Learning/kubernetes-selfmanaged/terraform/k8s_id_rsa -o StrictHostKeyChecking=no azureuser@20.127.130.235 ' *)",
+      "Bash(ssh -i d:/Learning/kubernetes-selfmanaged/terraform/k8s_id_rsa -o StrictHostKeyChecking=no azureuser@20.127.130.235 'kubectl -n nginx-gateway get pods')"
     ]
   }
 }
