@@ -1,6 +1,10 @@
 # Kubernetes Master/Worker on Azure with Tomcat + NGINX Ingress
+<<<<<<< HEAD
+=======
+# Hi how are you 
+# This is ratheesh
 # he i shari 
-
+>>>>>>> d3678e316a3eb8a46bed962ffc9c55eb1494225d
 Two-VM Kubernetes cluster on Azure, provisioned with Terraform, with a sample
 Tomcat app deployed via YAML into a dedicated namespace, fronted by the
 NGINX ingress controller.
