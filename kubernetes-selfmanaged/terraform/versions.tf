@@ -1,6 +1,15 @@
 terraform {
   required_version = ">= 1.3.0"
 
+  # State stored in Azure Blob — survives across GitHub Actions runs
+  backend "azurerm" {
+    resource_group_name  = "rg-k8s-tomcat"
+    storage_account_name = "ghterraformstorage"   # must be globally unique, lowercase, 3-24 chars
+    container_name       = "tfstate"
+    key                  = "k8s-selfmanaged.tfstate"
+    use_oidc             = true                       # authenticates via the same App Registration OIDC
+  }
+
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
