@@ -1,7 +1,16 @@
 name: Terraform Azure Test
 
 on:
-  workflow_dispatch:       # manual trigger to test on demand
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Terraform action to run'
+        required: true
+        default: 'plan'
+        type: choice
+        options:
+          - plan
+          - apply
   push:
     branches: [k8s-gatewayapi]
     paths:
@@ -64,7 +73,7 @@ jobs:
     name: Terraform Apply
     runs-on: ubuntu-latest
     needs: terraform-validate
-    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/k8s-gatewayapi'
+    if: github.event_name == 'workflow_dispatch' && inputs.action == 'apply'
 
     steps:
       - name: Checkout code
