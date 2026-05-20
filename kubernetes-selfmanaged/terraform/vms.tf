@@ -2,13 +2,6 @@ resource "tls_private_key" "ssh" {
   algorithm = "RSA"
   rsa_bits  = 4096
 }
-
-resource "local_file" "private_key" {
-  content         = tls_private_key.ssh.private_key_pem
-  filename        = "${path.module}/k8s_id_rsa"
-  file_permission = "0600"
-}
-
 # Cloud-init: install containerd + kubeadm/kubelet/kubectl on every node.
 locals {
   cloud_init = base64encode(<<-EOT
