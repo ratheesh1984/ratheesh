@@ -11,6 +11,7 @@ on:
         options:
           - plan
           - apply
+          - destroy
   push:
     branches: [k8s-gatewayapi]
     paths:
@@ -36,7 +37,7 @@ jobs:
   terraform-validate:
     name: Terraform Validate & Plan
     runs-on: ubuntu-latest
-
+    if: github.event_name == 'workflow_dispatch' && inputs.action == 'plan'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -72,7 +73,7 @@ jobs:
   terraform-apply:
     name: Terraform Apply
     runs-on: ubuntu-latest
-    needs: terraform-validate
+    #needs: terraform-validate
     if: github.event_name == 'workflow_dispatch' && inputs.action == 'apply'
 
     steps:
@@ -98,3 +99,34 @@ jobs:
       - name: Terraform Apply
         working-directory: ${{ env.TF_WORKING_DIR }}
         run: terraform apply -auto-approve -input=false
+  
+  terraform-destroy:
+    name: Terraform Destroy
+    runs-on: ubuntu-latest
+    #needs: terraform-validate
+    if: github.event_name == 'workflow_dispatch' && inputs.action == 'destroy'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Azure login via OIDC (App Registration)
+        uses: azure/login@v2
+        with:
+          client-id:       ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id:       ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "~1.3"
+
+      - name: Terraform Init
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: terraform init -input=false
+
+      - name: Terraform Destroy
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: terraform destroy -auto-approve -input=false
+  
